@@ -6,6 +6,8 @@ qtDictApp::qtDictApp(QWidget *parent)
     : QWidget(parent)
 {   
 
+    main_layout = new QStackedLayout();
+
     //Weclome screen
     welcome_screen = new QVBoxLayout();
     QLabel *welcome_text = new QLabel("QtDictApp");
@@ -27,20 +29,37 @@ qtDictApp::qtDictApp(QWidget *parent)
     result_screen->addWidget(result_text);
     result_screen->addWidget(towelcome_button);
 
-    QStateMachine machine;
+    QWidget *welcome_wrapper = new QWidget();
+    welcome_wrapper->setLayout(welcome_screen);
+    QWidget *processing_wrapper = new QWidget();
+    processing_wrapper->setLayout(processing_screen);
+    QWidget *result_wrapper = new QWidget();
+    result_wrapper->setLayout(result_screen);
 
+    main_layout->addWidget(welcome_wrapper);
+    main_layout->addWidget(processing_wrapper);
+    main_layout->addWidget(result_wrapper);
+    main_layout->setCurrentIndex(0);
+
+    this->setLayout(main_layout);
+
+    //Describing states
     QState *welcome_state = new QState(); machine.addState(welcome_state);
     QState *processing_state = new QState(); machine.addState(processing_state);
     QState *result_state = new QState(); machine.addState(result_state);
 
+    //Connecting states
+
     connect(welcome_state, SIGNAL(entered()), this, SLOT(initWelcomeState()));
     welcome_state->addTransition(connect_button, SIGNAL(clicked()), processing_state);
+
     connect(processing_state, SIGNAL(entered()), this, SLOT(initProcessingState()));
     processing_state->addTransition(cancel_button, SIGNAL(clicked()), welcome_state);
+
     connect(result_state, SIGNAL(entered()), this, SLOT(initResultState()));
     result_state->addTransition(towelcome_button, SIGNAL(clicked()), welcome_state);
-    connect(processing_state, SIGNAL(entered()), this, SLOT(initWelcomeState()));
 
+    //launch machine
     machine.setInitialState(welcome_state);
     machine.start();
 
@@ -48,15 +67,16 @@ qtDictApp::qtDictApp(QWidget *parent)
 
 void qtDictApp::initWelcomeState(){
     qDebug()<<"welcome state entered";
-    this->setLayout(welcome_screen);
+    main_layout->setCurrentIndex(0);
 }
 void qtDictApp::initProcessingState(){
     qDebug()<<"processing state entered";
-    this->setLayout(processing_screen);
+    main_layout->setCurrentIndex(1);
 }
 void qtDictApp::initResultState(){
     qDebug()<<"result state entered";
     this->setLayout(result_screen);
+    main_layout->setCurrentIndex(2);
 }
 
 qtDictApp::~qtDictApp()

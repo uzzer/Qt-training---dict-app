@@ -7,15 +7,23 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QStateMachine>
+#include <QState>
 #include <QtDebug>
+#include <QLayout>
+#include <QLayoutItem>
+#include <QStackedLayout>
 
 class qtDictApp : public QWidget
 {
     Q_OBJECT
 
+    QStackedLayout *main_layout;
     QVBoxLayout *welcome_screen;
     QVBoxLayout *processing_screen;
     QVBoxLayout *result_screen;
+    QStateMachine machine;
+
+
 
 public:
     qtDictApp(QWidget *parent = 0);
