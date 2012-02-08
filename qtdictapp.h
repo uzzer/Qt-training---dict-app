@@ -35,6 +35,8 @@
 #include <QLayout>
 #include <QLayoutItem>
 #include <QStackedLayout>
+#include <QLineEdit>
+#include <QtNetwork/QTcpSocket>
 
 class qtDictApp : public QWidget
 {
@@ -43,25 +45,22 @@ class qtDictApp : public QWidget
     QStateMachine machine;
     QStackedLayout *main_layout;
 
-    //QWidget *welcome_wrapper;
-    QVBoxLayout *welcome_screen;
-        QPushButton *connect_button;
     QState *welcome_state;
+        QPushButton *connect_button;
 
-    QVBoxLayout *connecting_screen;
-        QPushButton *cancelconnect_button;
     QState *connecting_state;
+        QPushButton *cancelconnect_button;
 
-    QVBoxLayout *query_screen;
     QState *query_state;
+        QLineEdit *queryfiled;
+        QPushButton *send_query_button;
+        QPushButton *cancelconnect2_button;
 
-    QVBoxLayout *processing_screen;
     QState *processing_state;
 
-    QVBoxLayout *result_screen;
     QState *result_state;
 
-
+    QTcpSocket *tcpSocket;
 
 public:
     qtDictApp(QWidget *parent = 0);
@@ -71,6 +70,7 @@ public:
     void createQueryState();
     void createProcessingState();
     void createResultState();
+    void connectToServer();
 
 public slots:
     void initWelcomeState();

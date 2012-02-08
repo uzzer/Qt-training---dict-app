@@ -109,7 +109,30 @@ void qtDictApp::createConnectionState(){
     connecting_state->addTransition(cancelconnect_button, SIGNAL(clicked()), welcome_state);
 }
 
-void qtDictApp::createQueryState(){}
+/**
+*   Implement query state
+*/
+void qtDictApp::createQueryState(){
+    //UI
+    QVBoxLayout *screen = new QVBoxLayout();
+    QLabel *text = new QLabel("Query state");
+    screen->addWidget(text);
+    queryfiled = new QLineEdit();
+    screen->addWidget(queryfiled);
+    send_query_button = new QPushButton("Query");
+    screen->addWidget(send_query_button);
+    cancelconnect2_button = new QPushButton("Cancel");
+    screen->addWidget(cancelconnect2_button);
+    //Add page to Stack
+    QWidget *wrapper = new QWidget();
+    wrapper->setLayout(screen);
+    this->main_layout->addWidget(wrapper);
+    //Add machine functional part
+    connect(query_state, SIGNAL(entered()), this, SLOT(initQueryState()));
+    query_state->addTransition(send_query_button, SIGNAL(clicked()), processing_state);
+    query_state->addTransition(cancelconnect2_button, SIGNAL(clicked()), welcome_state);
+}
+
 void qtDictApp::createProcessingState(){}
 void qtDictApp::createResultState(){}
 
@@ -128,6 +151,7 @@ void qtDictApp::initWelcomeState(){
 void qtDictApp::initConnectState(){
     qDebug()<<"connect state entered";
     main_layout->setCurrentIndex(CONNECT_SCREEN_ID);
+    connectToServer();
 }
 
 /**
@@ -151,8 +175,15 @@ void qtDictApp::initProcessingState(){
 */
 void qtDictApp::initResultState(){
     qDebug()<<"result state entered";
-    this->setLayout(result_screen);
     main_layout->setCurrentIndex(RESULT_SCREEN_ID);
+}
+
+
+void qtDictApp::connectToServer(){
+    tcpSocket = new QTcpSocket(this);
+    connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(readFortune()));
+    connect(tcpSocket, SIGNAL(error(QAbstractSocket::SocketError)),
+           this, SLOT(displayError(QAbstractSocket::SocketError)));
 }
 
 qtDictApp::~qtDictApp()
