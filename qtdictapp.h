@@ -40,20 +40,42 @@ class qtDictApp : public QWidget
 {
     Q_OBJECT
 
-    QStackedLayout *main_layout;
-    QVBoxLayout *welcome_screen;
-    QVBoxLayout *processing_screen;
-    QVBoxLayout *result_screen;
     QStateMachine machine;
+    QStackedLayout *main_layout;
+
+    //QWidget *welcome_wrapper;
+    QVBoxLayout *welcome_screen;
+        QPushButton *connect_button;
+    QState *welcome_state;
+
+    QVBoxLayout *connecting_screen;
+        QPushButton *cancelconnect_button;
+    QState *connecting_state;
+
+    QVBoxLayout *query_screen;
+    QState *query_state;
+
+    QVBoxLayout *processing_screen;
+    QState *processing_state;
+
+    QVBoxLayout *result_screen;
+    QState *result_state;
 
 
 
 public:
     qtDictApp(QWidget *parent = 0);
     ~qtDictApp();
+    void createWelcomeState();
+    void createConnectionState();
+    void createQueryState();
+    void createProcessingState();
+    void createResultState();
 
 public slots:
     void initWelcomeState();
+    void initConnectState();
+    void initQueryState();
     void initProcessingState();
     void initResultState();
 };

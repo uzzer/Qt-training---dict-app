@@ -26,6 +26,10 @@
 #define QUERY_SCREEN_ID 2
 #define PROCESSING_SCREEN_ID 3
 #define RESULT_SCREEN_ID 4
+
+#define DICT_SERVER_IP 127.0.0.1
+#define DICT_SERVER_PORT 2626
+
 #include "qtdictapp.h"
 
 
@@ -40,80 +44,115 @@ qtDictApp::qtDictApp(QWidget *parent)
 
     main_layout = new QStackedLayout();
 
-    //Weclome screen
-    welcome_screen = new QVBoxLayout();
-    QLabel *welcome_text = new QLabel("QtDictApp");
-    QPushButton *connect_button = new QPushButton("Connect");
-    welcome_screen->addWidget(welcome_text);
-    welcome_screen->addWidget(connect_button);
-
-    //Processing
-    processing_screen = new QVBoxLayout();
-    QLabel *processing_text = new QLabel("processing...");
-    QPushButton *cancel_button = new QPushButton("Cancel");
-    processing_screen->addWidget(processing_text);
-    processing_screen->addWidget(cancel_button);
-
-    //Result screen
-    result_screen = new QVBoxLayout();
-    QLabel *result_text = new QLabel("this is result");
-    QPushButton *towelcome_button = new QPushButton("Back to welcome");
-    result_screen->addWidget(result_text);
-    result_screen->addWidget(towelcome_button);
-
-    QWidget *welcome_wrapper = new QWidget();
-    welcome_wrapper->setLayout(welcome_screen);
-    QWidget *processing_wrapper = new QWidget();
-    processing_wrapper->setLayout(processing_screen);
-    QWidget *result_wrapper = new QWidget();
-    result_wrapper->setLayout(result_screen);
-
-    main_layout->addWidget(welcome_wrapper);
-    main_layout->addWidget(processing_wrapper);
-    main_layout->addWidget(result_wrapper);
-    main_layout->setCurrentIndex(WELCOME_SCREEN_ID);
-
-    this->setLayout(main_layout);
-
     //Describing states
-    QState *welcome_state = new QState(); machine.addState(welcome_state);
-    QState *processing_state = new QState(); machine.addState(processing_state);
-    QState *result_state = new QState(); machine.addState(result_state);
+    processing_state = new QState(); machine.addState(processing_state);
+    connecting_state = new QState(); machine.addState(connecting_state);
+    query_state = new QState(); machine.addState(query_state);
+    result_state = new QState(); machine.addState(result_state);
+    welcome_state = new QState(); machine.addState(welcome_state);
 
-    //Connecting states
+    //Implement states
+    //ORDER IS IMPORTANT
+    createWelcomeState();
+    createConnectionState();
+    createQueryState();
+    createProcessingState();
+    createResultState();
 
-    connect(welcome_state, SIGNAL(entered()), this, SLOT(initWelcomeState()));
-    welcome_state->addTransition(connect_button, SIGNAL(clicked()), processing_state);
-
-    connect(processing_state, SIGNAL(entered()), this, SLOT(initProcessingState()));
-    processing_state->addTransition(cancel_button, SIGNAL(clicked()), welcome_state);
-
-    connect(result_state, SIGNAL(entered()), this, SLOT(initResultState()));
-    result_state->addTransition(towelcome_button, SIGNAL(clicked()), welcome_state);
-
+    //SetupUI
+    main_layout->setCurrentIndex(WELCOME_SCREEN_ID);
+    this->setLayout(main_layout);
     //launch machine
     machine.setInitialState(welcome_state);
     machine.start();
 
+
 }
 
 /**
-* Initialize welcome screen when welcome state is activated
+*   Implement welcome state
+*/
+void qtDictApp::createWelcomeState(){
+    qDebug()<<"welcome state creation";
+    //UI
+    QVBoxLayout *screen = new QVBoxLayout();
+    QLabel *text = new QLabel("QtDictApp");
+    screen->addWidget(text);
+    connect_button = new QPushButton("Connect");
+    screen->addWidget(connect_button);
+    //Add page to Stack
+    QWidget *wrapper = new QWidget();
+    wrapper->setLayout(screen);
+    this->main_layout->addWidget(wrapper);
+    //Add machine functional
+    connect(welcome_state, SIGNAL(entered()), this, SLOT(initWelcomeState()));
+    welcome_state->addTransition(connect_button, SIGNAL(clicked()), connecting_state);
+}
+
+/**
+*   Implement connecting state
+*/
+void qtDictApp::createConnectionState(){
+    qDebug()<<"conencting state creation";
+    //UI
+    QVBoxLayout *screen = new QVBoxLayout();
+    QLabel *text = new QLabel("Connecting ...");
+    screen->addWidget(text);
+    cancelconnect_button = new QPushButton("Cancel");
+    screen->addWidget(cancelconnect_button);
+    //Add page to Stack
+    QWidget *wrapper = new QWidget();
+    wrapper->setLayout(screen);
+    this->main_layout->addWidget(wrapper);
+    //Add machine functional
+    connect(connecting_state, SIGNAL(entered()), this, SLOT(initConnectState()));
+    connecting_state->addTransition(cancelconnect_button, SIGNAL(clicked()), welcome_state);
+}
+
+void qtDictApp::createQueryState(){}
+void qtDictApp::createProcessingState(){}
+void qtDictApp::createResultState(){}
+
+
+/**
+* SLOT to intialize welcome state on activated
 */
 void qtDictApp::initWelcomeState(){
     qDebug()<<"welcome state entered";
     main_layout->setCurrentIndex(WELCOME_SCREEN_ID);
 }
 
+/**
+* SLOT to intialize connect state on activated
+*/
+void qtDictApp::initConnectState(){
+    qDebug()<<"connect state entered";
+    main_layout->setCurrentIndex(CONNECT_SCREEN_ID);
+}
 
+/**
+* SLOT to intialize query state on activated
+*/
+void qtDictApp::initQueryState(){
+    qDebug()<<"query state entered";
+    main_layout->setCurrentIndex(QUERY_SCREEN_ID);
+}
+
+/**
+* SLOT to intialize processing state on activated
+*/
 void qtDictApp::initProcessingState(){
     qDebug()<<"processing state entered";
-    main_layout->setCurrentIndex(1);
+    main_layout->setCurrentIndex(PROCESSING_SCREEN_ID);
 }
+
+/**
+* SLOT to intialize result state on activated
+*/
 void qtDictApp::initResultState(){
     qDebug()<<"result state entered";
     this->setLayout(result_screen);
-    main_layout->setCurrentIndex(2);
+    main_layout->setCurrentIndex(RESULT_SCREEN_ID);
 }
 
 qtDictApp::~qtDictApp()
