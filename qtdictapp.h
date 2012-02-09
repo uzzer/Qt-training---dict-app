@@ -36,7 +36,10 @@
 #include <QLayoutItem>
 #include <QStackedLayout>
 #include <QLineEdit>
+#include <QtNetwork>
 #include <QtNetwork/QTcpSocket>
+#include <QtNetwork/QHostAddress>
+#include <QDataStream>
 
 class qtDictApp : public QWidget
 {
@@ -60,24 +63,33 @@ class qtDictApp : public QWidget
 
     QState *result_state;
 
-    QTcpSocket *tcpSocket;
+    QTcpSocket *client;
 
 public:
     qtDictApp(QWidget *parent = 0);
     ~qtDictApp();
+    //stateMachine
     void createWelcomeState();
     void createConnectionState();
     void createQueryState();
     void createProcessingState();
     void createResultState();
+    //DICT
     void connectToServer();
 
+
 public slots:
+    //stateMachine
     void initWelcomeState();
     void initConnectState();
     void initQueryState();
     void initProcessingState();
     void initResultState();
+    //DICT
+    void onClientConnected();
+
+signals:
+    void goToQueryState();
 };
 
 #endif // QTDICTAPP_H

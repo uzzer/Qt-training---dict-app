@@ -28,7 +28,7 @@
 #define RESULT_SCREEN_ID 4
 
 #define DICT_SERVER_IP 127.0.0.1
-#define DICT_SERVER_PORT 2626
+#define DICT_SERVER_PORT 2628
 
 #include "qtdictapp.h"
 
@@ -59,6 +59,8 @@ qtDictApp::qtDictApp(QWidget *parent)
     createProcessingState();
     createResultState();
 
+    machine.addTransition(this,SIGNAL(goToQueryState()),query_state);
+
     //SetupUI
     main_layout->setCurrentIndex(WELCOME_SCREEN_ID);
     this->setLayout(main_layout);
@@ -66,6 +68,9 @@ qtDictApp::qtDictApp(QWidget *parent)
     machine.setInitialState(welcome_state);
     machine.start();
 
+    //client setup
+    client = new QTcpSocket();
+    connect(client, SIGNAL(connected()),this, SLOT(onClientConnected()));
 
 }
 
@@ -180,11 +185,21 @@ void qtDictApp::initResultState(){
 
 
 void qtDictApp::connectToServer(){
-    tcpSocket = new QTcpSocket(this);
-    connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(readFortune()));
-    connect(tcpSocket, SIGNAL(error(QAbstractSocket::SocketError)),
-           this, SLOT(displayError(QAbstractSocket::SocketError)));
+    qDebug()<<"connecting...";
+    if(client->ConnectedState!=0){
+       client->disconnectFromHost();
+    }
+    client->connectToHost("127.0.0.1", 2626);
 }
+
+void qtDictApp::onClientConnected(){
+    qDebug()<<"client connected";
+    emit(goToQueryState());
+    client->write("DEFINE ! penguin");
+
+}
+
+
 
 qtDictApp::~qtDictApp()
 {

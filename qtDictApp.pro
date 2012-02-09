@@ -5,6 +5,7 @@
 #-------------------------------------------------
 
 QT       += core gui
+QT       += network
 
 TARGET = qtDictApp
 TEMPLATE = app
