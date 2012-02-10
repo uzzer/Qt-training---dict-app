@@ -76,6 +76,7 @@ public:
     void createResultState();
     //DICT
     void connectToServer();
+    void sendMessage(QString msg);
 
 
 public slots:
@@ -87,9 +88,12 @@ public slots:
     void initResultState();
     //DICT
     void onClientConnected();
+    void readClient();
+    void handleClientError(QAbstractSocket::SocketError);
 
 signals:
     void goToQueryState();
+    void goToWelcomeState();
 };
 
 #endif // QTDICTAPP_H

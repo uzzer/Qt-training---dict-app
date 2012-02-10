@@ -59,7 +59,9 @@ qtDictApp::qtDictApp(QWidget *parent)
     createProcessingState();
     createResultState();
 
-    machine.addTransition(this,SIGNAL(goToQueryState()),query_state);
+    connecting_state->addTransition(this,SIGNAL(goToQueryState()),query_state);
+    connecting_state->addTransition(this,SIGNAL(goToWelcomeState()),welcome_state);
+    query_state->addTransition(this,SIGNAL(goToWelcomeState()),welcome_state);
 
     //SetupUI
     main_layout->setCurrentIndex(WELCOME_SCREEN_ID);
@@ -71,7 +73,8 @@ qtDictApp::qtDictApp(QWidget *parent)
     //client setup
     client = new QTcpSocket();
     connect(client, SIGNAL(connected()),this, SLOT(onClientConnected()));
-
+    connect(client,SIGNAL(readyRead()),this,SLOT(readClient()));
+    connect(client,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(handleClientError(QAbstractSocket::SocketError)));
 }
 
 /**
@@ -189,16 +192,54 @@ void qtDictApp::connectToServer(){
     if(client->ConnectedState!=0){
        client->disconnectFromHost();
     }
-    client->connectToHost("127.0.0.1", 2626);
+    client->connectToHost("127.0.0.1", 2628);
 }
 
 void qtDictApp::onClientConnected(){
     qDebug()<<"client connected";
     emit(goToQueryState());
-    client->write("DEFINE ! penguin");
+    //client->write("DEFINE ! penguin");
 
 }
 
+void qtDictApp::readClient(){
+    QByteArray answer = client->readAll();
+    QString an(answer);
+    qDebug()<<"S:"<<an;
+    //client->write("DEFINE ! penguin");
+    sendMessage("DEFINE ! niobium");
+}
+
+void qtDictApp::sendMessage(QString msg){
+    qDebug()<<"C: "<<msg;
+//    QByteArray block;
+//         QDataStream out(&block,QIODevice::WriteOnly);
+//         out.setVersion(QDataStream::Qt_4_0);
+//         out << (quint16)0;
+//              out << msg;
+//              out.device()->seek(0);
+//              out << (quint16)(block.size() - sizeof(quint16));
+//              client->write(block);
+    client->write("DEFINE ! niobium");
+}
+
+void qtDictApp::handleClientError(QAbstractSocket::SocketError socketError){
+    qDebug()<<client->errorString();
+    switch (socketError) {
+         case QAbstractSocket::RemoteHostClosedError:
+                emit(goToWelcomeState());
+             break;
+         case QAbstractSocket::HostNotFoundError:
+
+             break;
+         case QAbstractSocket::ConnectionRefusedError:
+
+             break;
+         default:
+            break;
+         }
+
+}
 
 
 qtDictApp::~qtDictApp()
