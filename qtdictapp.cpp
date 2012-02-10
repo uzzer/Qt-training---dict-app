@@ -211,7 +211,7 @@ void qtDictApp::readClient(){
 }
 
 void qtDictApp::sendMessage(QString msg){
-    qDebug()<<"C: "<<msg;
+    qDebug()<<"client says C: "<<msg;
 //    QByteArray block;
 //         QDataStream out(&block,QIODevice::WriteOnly);
 //         out.setVersion(QDataStream::Qt_4_0);
