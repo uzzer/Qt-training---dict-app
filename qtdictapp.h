@@ -60,9 +60,11 @@ class qtDictApp : public QWidget
         QPushButton *cancelconnect2_button;
 
     QState *processing_state;
+        QPushButton *cancelconnect3_button;
 
     QState *result_state;
-
+        QLabel *resultarea;
+        QPushButton *cancelconnect4_button;
     QTcpSocket *client;
 
 public:
@@ -77,6 +79,7 @@ public:
     //DICT
     void connectToServer();
     void sendMessage(QString msg);
+    void handleQuery(QString querytext);
 
 
 public slots:
@@ -90,6 +93,7 @@ public slots:
     void onClientConnected();
     void readClient();
     void handleClientError(QAbstractSocket::SocketError);
+    void startQuery();
 
 signals:
     void goToQueryState();

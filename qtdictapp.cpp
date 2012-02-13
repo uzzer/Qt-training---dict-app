@@ -42,7 +42,9 @@ qtDictApp::qtDictApp(QWidget *parent)
     : QWidget(parent)
 {   
 
+    //Create base objects
     main_layout = new QStackedLayout();
+    client = new QTcpSocket();
 
     //Describing states
     processing_state = new QState(); machine.addState(processing_state);
@@ -71,7 +73,6 @@ qtDictApp::qtDictApp(QWidget *parent)
     machine.start();
 
     //client setup
-    client = new QTcpSocket();
     connect(client, SIGNAL(connected()),this, SLOT(onClientConnected()));
     connect(client,SIGNAL(readyRead()),this,SLOT(readClient()));
     connect(client,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(handleClientError(QAbstractSocket::SocketError)));
@@ -121,6 +122,7 @@ void qtDictApp::createConnectionState(){
 *   Implement query state
 */
 void qtDictApp::createQueryState(){
+    qDebug()<<"query state creation";
     //UI
     QVBoxLayout *screen = new QVBoxLayout();
     QLabel *text = new QLabel("Query state");
@@ -135,14 +137,49 @@ void qtDictApp::createQueryState(){
     QWidget *wrapper = new QWidget();
     wrapper->setLayout(screen);
     this->main_layout->addWidget(wrapper);
+    //Add Query state functional
+    connect(send_query_button,SIGNAL(clicked()),this,SLOT(startQuery()));
     //Add machine functional part
     connect(query_state, SIGNAL(entered()), this, SLOT(initQueryState()));
     query_state->addTransition(send_query_button, SIGNAL(clicked()), processing_state);
     query_state->addTransition(cancelconnect2_button, SIGNAL(clicked()), welcome_state);
 }
 
-void qtDictApp::createProcessingState(){}
-void qtDictApp::createResultState(){}
+void qtDictApp::createProcessingState(){
+    qDebug()<<"processing state creation";
+    //UI
+    QVBoxLayout *screen = new QVBoxLayout();
+    QLabel *text = new QLabel("Processing query ...");
+    screen->addWidget(text);
+    cancelconnect3_button = new QPushButton("Cancel");
+    screen->addWidget(cancelconnect3_button);
+    //Add page to Stack
+    QWidget *wrapper = new QWidget();
+    wrapper->setLayout(screen);
+    this->main_layout->addWidget(wrapper);
+    //Add machine functional
+    connect(processing_state, SIGNAL(entered()), this, SLOT(initProcessingState()));
+    processing_state->addTransition(cancelconnect3_button, SIGNAL(clicked()), welcome_state);
+    processing_state->addTransition(client,SIGNAL(readyRead()),result_state);
+}
+void qtDictApp::createResultState(){
+    qDebug()<<"result state creation";
+    //UI
+    QVBoxLayout *screen = new QVBoxLayout();
+    QLabel *text = new QLabel("Result");
+    screen->addWidget(text);
+    resultarea = new QLabel("Result area");
+    screen->addWidget(resultarea);
+    cancelconnect4_button = new QPushButton("Home");
+    screen->addWidget(cancelconnect4_button);
+    //Add page to Stack
+    QWidget *wrapper = new QWidget();
+    wrapper->setLayout(screen);
+    this->main_layout->addWidget(wrapper);
+    //Add machine functional
+    connect(result_state, SIGNAL(entered()), this, SLOT(initResultState()));
+    result_state->addTransition(cancelconnect4_button, SIGNAL(clicked()), query_state);
+}
 
 
 /**
@@ -205,22 +242,14 @@ void qtDictApp::onClientConnected(){
 void qtDictApp::readClient(){
     QByteArray answer = client->readAll();
     QString an(answer);
+    resultarea->setText(answer);
     qDebug()<<"S:"<<an;
-    //client->write("DEFINE ! penguin");
-    sendMessage("DEFINE ! niobium");
 }
 
 void qtDictApp::sendMessage(QString msg){
     qDebug()<<"client says C: "<<msg;
-//    QByteArray block;
-//         QDataStream out(&block,QIODevice::WriteOnly);
-//         out.setVersion(QDataStream::Qt_4_0);
-//         out << (quint16)0;
-//              out << msg;
-//              out.device()->seek(0);
-//              out << (quint16)(block.size() - sizeof(quint16));
-//              client->write(block);
-    client->write("DEFINE ! niobium");
+    client->write(msg.toAscii());
+    client->flush();
 }
 
 void qtDictApp::handleClientError(QAbstractSocket::SocketError socketError){
@@ -230,16 +259,21 @@ void qtDictApp::handleClientError(QAbstractSocket::SocketError socketError){
                 emit(goToWelcomeState());
              break;
          case QAbstractSocket::HostNotFoundError:
-
+                emit(goToWelcomeState());
              break;
          case QAbstractSocket::ConnectionRefusedError:
-
+                emit(goToWelcomeState());
              break;
          default:
             break;
          }
 
 }
+
+void qtDictApp::startQuery(){
+    sendMessage(queryfiled->text());
+}
+
 
 
 qtDictApp::~qtDictApp()
