@@ -151,6 +151,9 @@ void qtDictApp::createQueryState(){
     query_state->addTransition(cancelconnect2_button, SIGNAL(clicked()), welcome_state);
 }
 
+/**
+*   Implement query processing state
+*/
 void qtDictApp::createProcessingState(){
     qDebug()<<"processing state creation";
     //UI
@@ -168,6 +171,10 @@ void qtDictApp::createProcessingState(){
     processing_state->addTransition(cancelconnect3_button, SIGNAL(clicked()), welcome_state);
     processing_state->addTransition(client,SIGNAL(readyRead()),result_state);
 }
+
+/**
+*   Implement result state
+*/
 void qtDictApp::createResultState(){
     qDebug()<<"result state creation";
     //UI
@@ -230,6 +237,9 @@ void qtDictApp::initResultState(){
 }
 
 
+/**
+*   Implementation of connection to server
+*/
 void qtDictApp::connectToServer(){
     qDebug()<<"connecting...";
     if(client->ConnectedState!=0){
@@ -240,13 +250,18 @@ void qtDictApp::connectToServer(){
     client->connectToHost(server_host->currentText(), DICT_SERVER_PORT);
 }
 
+/**
+* SLOT when client connected to server
+*/
 void qtDictApp::onClientConnected(){
     qDebug()<<"client connected";
     emit(goToQueryState());
-    //client->write("DEFINE ! penguin");
-
 }
 
+
+/**
+* SLOT read answer from server
+*/
 void qtDictApp::readClient(){
     QByteArray answer = client->readAll();
     QString an(answer);
@@ -254,12 +269,19 @@ void qtDictApp::readClient(){
     qDebug()<<"S:"<<an;
 }
 
+/**
+*   Send message to server
+*/
 void qtDictApp::sendMessage(QString msg){
     qDebug()<<"client says C: DEFINE !"<<msg;
     client->write("DEFINE ! "+msg.toAscii());
     client->flush();
 }
 
+
+/**
+* SLOT handle server errors
+*/
 void qtDictApp::handleClientError(QAbstractSocket::SocketError socketError){
     qDebug()<<client->errorString();
     switch (socketError) {
@@ -278,10 +300,13 @@ void qtDictApp::handleClientError(QAbstractSocket::SocketError socketError){
 
 }
 
+
+/**
+* SLOT query server
+*/
 void qtDictApp::startQuery(){
     sendMessage(queryfiled->text());
 }
-
 
 
 qtDictApp::~qtDictApp()
