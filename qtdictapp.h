@@ -40,6 +40,8 @@
 #include <QtNetwork/QTcpSocket>
 #include <QtNetwork/QHostAddress>
 #include <QDataStream>
+#include <QComboBox>
+#include <QTextEdit>
 
 class qtDictApp : public QWidget
 {
@@ -50,6 +52,7 @@ class qtDictApp : public QWidget
 
     QState *welcome_state;
         QPushButton *connect_button;
+        QComboBox *server_host;
 
     QState *connecting_state;
         QPushButton *cancelconnect_button;
@@ -63,7 +66,7 @@ class qtDictApp : public QWidget
         QPushButton *cancelconnect3_button;
 
     QState *result_state;
-        QLabel *resultarea;
+        QTextEdit *resultarea;
         QPushButton *cancelconnect4_button;
     QTcpSocket *client;
 

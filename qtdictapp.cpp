@@ -27,7 +27,6 @@
 #define PROCESSING_SCREEN_ID 3
 #define RESULT_SCREEN_ID 4
 
-#define DICT_SERVER_IP 127.0.0.1
 #define DICT_SERVER_PORT 2628
 
 #include "qtdictapp.h"
@@ -87,6 +86,13 @@ void qtDictApp::createWelcomeState(){
     QVBoxLayout *screen = new QVBoxLayout();
     QLabel *text = new QLabel("QtDictApp");
     screen->addWidget(text);
+    server_host = new QComboBox;
+    server_host->addItem("127.0.0.1");
+    server_host->addItem("dict.org");
+    server_host->addItem("dict1.us.dict.org");
+    server_host->addItem("dict.saugus.net");
+    server_host->addItem("dictd.xdsl.by");
+    screen->addWidget(server_host);
     connect_button = new QPushButton("Connect");
     screen->addWidget(connect_button);
     //Add page to Stack
@@ -168,7 +174,7 @@ void qtDictApp::createResultState(){
     QVBoxLayout *screen = new QVBoxLayout();
     QLabel *text = new QLabel("Result");
     screen->addWidget(text);
-    resultarea = new QLabel("Result area");
+    resultarea = new  QTextEdit("Result area");
     screen->addWidget(resultarea);
     cancelconnect4_button = new QPushButton("Home");
     screen->addWidget(cancelconnect4_button);
@@ -228,8 +234,10 @@ void qtDictApp::connectToServer(){
     qDebug()<<"connecting...";
     if(client->ConnectedState!=0){
        client->disconnectFromHost();
+       //client->disconnect();
     }
-    client->connectToHost("127.0.0.1", 2628);
+    qDebug()<<"connecting to " <<server_host->currentText();
+    client->connectToHost(server_host->currentText(), DICT_SERVER_PORT);
 }
 
 void qtDictApp::onClientConnected(){
@@ -247,8 +255,8 @@ void qtDictApp::readClient(){
 }
 
 void qtDictApp::sendMessage(QString msg){
-    qDebug()<<"client says C: "<<msg;
-    client->write(msg.toAscii());
+    qDebug()<<"client says C: DEFINE !"<<msg;
+    client->write("DEFINE ! "+msg.toAscii());
     client->flush();
 }
 
